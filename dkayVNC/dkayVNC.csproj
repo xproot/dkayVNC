@@ -198,6 +198,8 @@
   <ItemGroup>
     <Compile Include="Commands\Attributes\UsageAttrib.cs" />
     <Compile Include="Commands\connect.cs" />
+    <Compile Include="Commands\control.cs" />
+    <Compile Include="Commands\disconnect.cs" />
     <Compile Include="Commands\exception.cs" />
     <Compile Include="Commands\Help.cs" />
     <Compile Include="Commands\ping.cs" />
@@ -210,6 +212,8 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Utils\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

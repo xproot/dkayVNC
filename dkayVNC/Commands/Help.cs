@@ -13,6 +13,7 @@ namespace dkayVNC.Commands
     public class HelpCommand : BaseCommandModule
     {
         [Command("help")]
+        [Aliases(new string[] { "h", "?" })]
         [Description("there is no more help, you cannot run.")]
         [Usage("help [command(optional)]")]
         [Cooldown(2, 5, CooldownBucketType.Channel)]
@@ -24,12 +25,19 @@ namespace dkayVNC.Commands
                 {
                     if (command.Name.ToLower() == txt.ToLower() || command.Aliases.Contains(txt.ToLower()))
                     {
-                        await ctx.RespondAsync(new DiscordEmbedBuilder()
+                        DiscordEmbedBuilder _embed = new DiscordEmbedBuilder()
                         {
                             Title = command.Name,
                             Description = command.Description,
                             Color = ctx.Guild.CurrentMember.Color
-                        });
+                        };
+                        if (command.Aliases.Count > 0)
+                            _embed.AddField("Aliases", string.Join(", ", command.Aliases), true);
+                        else
+                            _embed.AddField("Aliases", "_\\*none\\*_");
+                        _embed.AddField("Usage", command.CustomAttributes.OfType<UsageAttribute>().FirstOrDefault().Usage, true);
+                        
+                        await ctx.RespondAsync(_embed);
                         return;
                     }
                     continue;
@@ -46,15 +54,17 @@ namespace dkayVNC.Commands
                 }
                 throw new Exception("I HAVE NO IDEA WHAT IS THAT");
             }
-            string cmds = "Total " + Program.Commands.RegisteredCommands.Count + Environment.NewLine;
+            string cmds = "Total \x1B[0m" + Program.Commands.RegisteredCommands.Count + Environment.NewLine;
             string currentcmd = "none";
             foreach (Command command in Program.Commands.RegisteredCommands.Values)
             {
                 if (currentcmd.ToLower() == command.Name.ToLower()) continue;
-                if (command.Description.Length < 36)
+                /*if (command.Description.Length < 64)
                     cmds = cmds + Environment.NewLine + "\x1B[31m" + command.Name + "\x1B[0m: " + command.Description;
                 else
-                    cmds = cmds + Environment.NewLine + "\x1B[31m" + command.Name + "\x1B[0m: " + command.Description.Substring(0, 35) + "...";
+                    cmds = cmds + Environment.NewLine + "\x1B[31m" + command.Name + "\x1B[0m: " + command.Description.Substring(0, 63) + "...";
+                */
+                cmds = cmds + Environment.NewLine + "\x1B[31m" + command.Name + "\x1B[0m: " + command.Description;
                 currentcmd = command.Name;
             }
 

@@ -9,16 +9,16 @@ using dkayVNC.Commands.Attributes;
 
 namespace dkayVNC.Commands
 {
-    public class StatusCommand : BaseCommandModule
+    public class ControlCommand : BaseCommandModule
     {
-        [Command("status")]
-        [Aliases(new string[] { "stat", "s"})]
-        [Description("Shows the status of the vnc client.")]
-        [Usage("status")]
+        [Command("lastcontrol")]
+        [Aliases(new string[] { "control" })]
+        [Description("Shows the last control action done.")]
+        [Usage("control")]
         [Cooldown(2, 5, CooldownBucketType.Channel)]
         public async Task Cmd(CommandContext ctx)
         {
-            await ctx.RespondAsync($"lastcontrol blah {Program.LastControlId} id in {Program.LastControlTimestamp} of {Program.LastControlType}");
+            await ctx.RespondAsync($"Connected: {Program.RfbClient.IsConnected}");
         }
     }
 }

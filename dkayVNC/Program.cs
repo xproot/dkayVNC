@@ -56,7 +56,7 @@ namespace dkayVNC
             if (File.Exists("config.json"))
             {
                 try { Config = JsonConvert.DeserializeObject<BotConfig>(File.ReadAllText("config.json")); }
-                catch { Log.Fatal("config.json is unreadeable!"); return; }
+                catch { Log.Fatal("config.json is unreadable!"); return; }
             }
             else
             {
@@ -197,13 +197,18 @@ namespace dkayVNC
 
         private static void Vnc_Connection(object sender, EventArgs e)
         {
-            LogAndBound($"Connection to {CurrentHostname}:{CurrentPort} established.");
+            Log.Information($"Connection to {CurrentHostname}:{CurrentPort} established.");
+            CurrentBoundChannel.SendMessageAsync($"Connection to {CurrentHostname}:{CurrentPort} established.{Environment.NewLine}_By the way, this channel is now bound to notifications and alerts_");
         }
 
         private static void Vnc_Close(object sender, EventArgs e)
         {
             if (MeantToDisconnect)
-                LogAndBound("Connection Closed.");
+            {
+                LogAndBound("Connection Closed." + Environment.NewLine
+                +"Unbounding this channel");
+                CurrentBoundChannel = null;
+            }
             else
             {
                 LogAndBound("Connection suddenly closed. Reconnecting...");
@@ -256,6 +261,16 @@ namespace dkayVNC
             _canvas.DrawString("Not connected", new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), new SolidBrush(Color.White), 99, 99);
 
             return _novideoframebuffer;
+        }
+
+        public static MemoryStream GetRfbMemoryStream()
+        {
+            MemoryStream _ms = new MemoryStream();
+            Bitmap _bitmap = Program.GetRfbBitmap();
+            _bitmap.Save(_ms, System.Drawing.Imaging.ImageFormat.Png);
+            _bitmap.Dispose();
+            _ms.Position = 0;
+            return _ms;
         }
     }
 }
