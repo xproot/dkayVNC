@@ -1,0 +1,24 @@
+﻿using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.CommandsNext;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using dkayVNC.Commands.Attributes;
+
+namespace dkayVNC.Commands
+{
+    public class ExceptionCommand : BaseCommandModule
+    {
+        [Command("exception")]
+        [Aliases(new string[] { "e", "ex" })]
+        [Description("Throw a new exception.")]
+        [Usage("exception [custom message(optional)]")]
+        [Cooldown(2, 5, CooldownBucketType.Channel)]
+        public async Task Cmd(CommandContext ctx, [RemainingText]string msg = "Exception manually thrown.")
+        {
+            throw new Exception(msg);
+        }
+    }
+}
