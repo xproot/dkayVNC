@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -15,11 +12,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RemoteViewing.Vnc;
 using Serilog;
-using System.Drawing.Imaging;
-using static System.Net.Mime.MediaTypeNames;
-using AnimatedGif;
 using dkayVNC.Utils;
-using dkayVNC.Commands;
 
 namespace dkayVNC
 {
