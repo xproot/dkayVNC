@@ -9,6 +9,7 @@ using dkayVNC.Commands.Attributes;
 using DSharpPlus.Entities;
 using System.IO;
 using System.Drawing;
+using AnimatedGif;
 
 namespace dkayVNC.Commands
 {
@@ -19,18 +20,18 @@ namespace dkayVNC.Commands
         [Description("Shows the framebuffer of the vnc client.")]
         [Usage("screenshot [frames(optional)]")]
         [Cooldown(2, 5, CooldownBucketType.Channel)]
-        public async Task Cmd(CommandContext ctx)
+        public async Task Cmd(CommandContext ctx, int frames = 0)
         {
             await ctx.TriggerTypingAsync();
             
             DiscordMessageBuilder discordMessageBuilder = new DiscordMessageBuilder().WithContent("📸!");
-            MemoryStream _ms = new MemoryStream();
-
-            discordMessageBuilder.AddFile("ss.png", Program.GetRfbMemoryStream(), false);
+            
+            if (frames > 0)
+                discordMessageBuilder.AddFile("ss.gif", Program.GetRfbMemoryStream(frames), false);
+            else
+                discordMessageBuilder.AddFile("ss.png", Program.GetRfbMemoryStream(frames), false);
 
             await ctx.RespondAsync(discordMessageBuilder);
-
-            //_ms.Dispose();
         }
     }
 }

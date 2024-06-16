@@ -202,6 +202,7 @@
     <Compile Include="Commands\disconnect.cs" />
     <Compile Include="Commands\exception.cs" />
     <Compile Include="Commands\Help.cs" />
+    <Compile Include="Commands\keycode.cs" />
     <Compile Include="Commands\ping.cs" />
     <Compile Include="Commands\screenshot.cs" />
     <Compile Include="Commands\status.cs" />

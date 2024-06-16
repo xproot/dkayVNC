@@ -17,6 +17,7 @@ using RemoteViewing.Vnc;
 using Serilog;
 using System.Drawing.Imaging;
 using static System.Net.Mime.MediaTypeNames;
+using AnimatedGif;
 
 namespace dkayVNC
 {
@@ -211,8 +212,8 @@ namespace dkayVNC
             }
             else
             {
-                LogAndBound("Connection suddenly closed. Reconnecting...");
-                RfbClient.Connect(CurrentHostname, CurrentPort);
+                LogAndBound("Connection unexpectedly closed.");
+                //RfbClient.Connect(CurrentHostname, CurrentPort);
             }
             /*Thread.Sleep(100);
             vncclient = new RemoteViewing.Vnc.VncClient();
@@ -236,7 +237,7 @@ namespace dkayVNC
         {
             if (RfbClient.IsConnected)
             {
-                Bitmap _rfbframebuffer = new Bitmap(RfbClient.Framebuffer.Width, RfbClient.Framebuffer.Height, PixelFormat.Format32bppRgb); ;
+                Bitmap _rfbframebuffer = new Bitmap(RfbClient.Framebuffer.Width, RfbClient.Framebuffer.Height, PixelFormat.Format32bppRgb);
 
                 var _fbrect = new Rectangle(0, 0, RfbClient.Framebuffer.Width, RfbClient.Framebuffer.Height);
                 var data = _rfbframebuffer.LockBits(_fbrect, ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
@@ -260,15 +261,29 @@ namespace dkayVNC
             _canvas.DrawString("Not connected", new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), new SolidBrush(Color.Black), 100, 100);
             _canvas.DrawString("Not connected", new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), new SolidBrush(Color.White), 99, 99);
 
+            _canvas.DrawString(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(), new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), new SolidBrush(Color.Green), 200, 200);
+
             return _novideoframebuffer;
         }
 
-        public static MemoryStream GetRfbMemoryStream()
+        public static MemoryStream GetRfbMemoryStream(int frames = 0)
         {
             MemoryStream _ms = new MemoryStream();
-            Bitmap _bitmap = Program.GetRfbBitmap();
-            _bitmap.Save(_ms, System.Drawing.Imaging.ImageFormat.Png);
-            _bitmap.Dispose();
+            if (frames < 1)
+            {
+                Bitmap _bitmap = Program.GetRfbBitmap();
+                _bitmap.Save(_ms, System.Drawing.Imaging.ImageFormat.Png);
+                _bitmap.Dispose();
+            }    
+            else
+            {
+                AnimatedGifCreator gif = new AnimatedGifCreator(_ms, 83);
+                for (int i = 0; i < frames; i++)
+                {
+                    gif.AddFrameAsync(Program.GetRfbBitmap(), -1, GifQuality.Bit8).GetAwaiter().GetResult();
+                }
+                gif.Dispose();
+            }
             _ms.Position = 0;
             return _ms;
         }

@@ -18,7 +18,7 @@ namespace dkayVNC.Commands
         [Cooldown(2, 5, CooldownBucketType.Channel)]
         public async Task Cmd(CommandContext ctx)
         {
-            await ctx.RespondAsync($"Connected: {Program.RfbClient.IsConnected}");
+            await ctx.RespondAsync($"todo");
         }
     }
 }
