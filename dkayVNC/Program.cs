@@ -165,38 +165,44 @@ namespace dkayVNC
             switch (Config.GraphicalError)
             {
                 case 1:
-                    Bitmap _image = new Bitmap(640, 480);
-                    Graphics _canvas = Graphics.FromImage(_image);
-                    SolidBrush _bluebrush = new SolidBrush(Color.DarkBlue);
-                    SolidBrush _whitebrush = new SolidBrush(Color.White);
+                    try
+                    {
+                        Bitmap _image = new Bitmap(640, 480);
+                        Graphics _canvas = Graphics.FromImage(_image);
+                        SolidBrush _bluebrush = new SolidBrush(Color.DarkBlue);
+                        SolidBrush _whitebrush = new SolidBrush(Color.White);
 
-                    _canvas.Clear(Color.DarkBlue);
-                    _canvas.DrawString("A problem has been detected and "+e.Exception.Source+" has shut down the command to prevent damage to the bot." + Environment.NewLine + Environment.NewLine
-                        + "The exception seems to have been thrown by the following method: " + e.Exception.TargetSite + Environment.NewLine + Environment.NewLine
-                        + e.Exception.Message + Environment.NewLine + Environment.NewLine
-                        + "If this is the first time you've seen this Stop error screen, check your arguments and try executing the command again. If this screen appears again, follow these steps:" + Environment.NewLine + Environment.NewLine
-                        + "Check to make sure any new package or configuration is properly installed. If this is a new installation, ask the maintainer or hoster for any additional configurations you might need." + Environment.NewLine + Environment.NewLine
-                        + "Technical information:" + Environment.NewLine + Environment.NewLine
-                        + e.Exception.StackTrace
-                        , new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), _whitebrush, new Rectangle(0, 0, 640, 480));
+                        _canvas.Clear(Color.DarkBlue);
+                        _canvas.DrawString("A problem has been detected and " + e.Exception.Source + " has shut down the command to prevent damage to the bot." + Environment.NewLine + Environment.NewLine
+                            + "The exception seems to have been thrown by the following method: " + e.Exception.TargetSite + Environment.NewLine + Environment.NewLine
+                            + e.Exception.Message + Environment.NewLine + Environment.NewLine
+                            + "If this is the first time you've seen this Stop error screen, check your arguments and try executing the command again. If this screen appears again, follow these steps:" + Environment.NewLine + Environment.NewLine
+                            + "Check to make sure any new package or configuration is properly installed. If this is a new installation, ask the maintainer or hoster for any additional configurations you might need." + Environment.NewLine + Environment.NewLine
+                            + "Technical information:" + Environment.NewLine + Environment.NewLine
+                            + e.Exception.StackTrace
+                            , new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), _whitebrush, new Rectangle(0, 0, 640, 480));
 
-                    _canvas.Save();
+                        _canvas.Save();
 
-                    MemoryStream _ms = new MemoryStream();
-                    _image.Save(_ms, System.Drawing.Imaging.ImageFormat.Png);
-                    _ms.Position = 0;
+                        MemoryStream _ms = new MemoryStream();
+                        _image.Save(_ms, System.Drawing.Imaging.ImageFormat.Png);
+                        _ms.Position = 0;
 
-                    DiscordMessageBuilder _msg = new DiscordMessageBuilder()
-                        .WithContent($"<@{e.Context.Member.Id}>, **whut ?!**");
+                        DiscordMessageBuilder _msg = new DiscordMessageBuilder()
+                            .WithContent($"<@{e.Context.Member.Id}>, **whut ?!**");
 
-                    _msg.AddFile("bsod.png", _ms, true);
-                    await _msg.SendAsync(e.Context.Channel);
+                        _msg.AddFile("bsod.png", _ms, true);
+                        await _msg.SendAsync(e.Context.Channel);
 
-                    _whitebrush.Dispose();
-                    _bluebrush.Dispose();
-                    _canvas.Dispose();
-                    _image.Dispose();
-                    _ms.Dispose();
+                        _whitebrush.Dispose();
+                        _bluebrush.Dispose();
+                        _canvas.Dispose();
+                        _image.Dispose();
+                        _ms.Dispose();
+                    } catch (Exception ex)
+                    {
+                        await e.Context.RespondAsync($"Exception thrown: ```{msg}```Additional exception thrown while trying to display exception: ```{ex.Message}```");
+                    }
 
                     break;
                 case 0:
