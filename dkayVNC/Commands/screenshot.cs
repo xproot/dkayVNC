@@ -10,6 +10,7 @@ using DSharpPlus.Entities;
 using System.IO;
 using System.Drawing;
 using AnimatedGif;
+using dkayVNC.Utils;
 
 namespace dkayVNC.Commands
 {
@@ -27,9 +28,9 @@ namespace dkayVNC.Commands
             DiscordMessageBuilder discordMessageBuilder = new DiscordMessageBuilder().WithContent("📸!");
             
             if (frames > 0)
-                discordMessageBuilder.AddFile("ss.gif", Program.GetRfbMemoryStream(frames), false);
+                discordMessageBuilder.AddFile("ss.gif", Framebuffer.GetRfbMemoryStream(frames), false);
             else
-                discordMessageBuilder.AddFile("ss.png", Program.GetRfbMemoryStream(frames), false);
+                discordMessageBuilder.AddFile("ss.png", Framebuffer.GetRfbMemoryStream(frames), false);
 
             await ctx.RespondAsync(discordMessageBuilder);
         }

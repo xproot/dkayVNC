@@ -18,6 +18,8 @@ using Serilog;
 using System.Drawing.Imaging;
 using static System.Net.Mime.MediaTypeNames;
 using AnimatedGif;
+using dkayVNC.Utils;
+using dkayVNC.Commands;
 
 namespace dkayVNC
 {
@@ -29,6 +31,10 @@ namespace dkayVNC
             public string Token { get; set; } = "BOT_TOKEN_HERE";
             public ulong[] OwnerId { get; set; } = { 366188463198044162, 831176009507536937 };
             public ulong DefaultChannelId { get; set; } = 0;
+            public bool EnforceDefaultChannel { get; set; } = true;
+            public string DefaultVNCServerHostname { get; set; } = "";
+            public ushort DefaultVNCServerPort { get; set; } = 5900;
+            public string DefaultVNCServerPassword { get; set; } = "";
             public ushort GraphicalError { get; set; } = 1;
         }
 
@@ -119,26 +125,42 @@ namespace dkayVNC
                 Log.Information($"- Guild: \"{guild.Name}\" ({guild.Id})");
             }
 
-            /*if (clientConfig.DefaultBindToChannel > 0)
+            if (Config.DefaultChannelId > 0)
             {
                 try
                 {
-                    boundChannel = client.GetChannelAsync(clientConfig.DefaultBindToChannel).GetAwaiter().GetResult();
-                    Log.Information($"Binding to channel set in bot config: {boundChannel.Name} ({boundChannel.Id})");
-                    boundChannel.SendMessageAsync("This bot has been bound to this channel by bot config. VNC commands in other channels will be ignored.");
+                    CurrentBoundChannel = client.GetChannelAsync(Config.DefaultChannelId).GetAwaiter().GetResult();
+                    Log.Information($"Binding to channel set in bot config: {CurrentBoundChannel.Name} ({CurrentBoundChannel.Id})");
 
+                    if (Config.EnforceDefaultChannel)
+                    {
+                        LogAndBound($"ℹ #{CurrentBoundChannel.Name} is required{Environment.NewLine}dkayVNC has been configured to only accept VNC commands on {CurrentBoundChannel.Name}.");
+                            
+                    } else if (!String.IsNullOrWhiteSpace(Config.DefaultVNCServerHostname))
+                    {
+                        LogAndBound($"Due to the bot's configuration, {CurrentBoundChannel.Name} has been bound and a connection attempt to {Config.DefaultVNCServerHostname}:{Config.DefaultVNCServerPort} is being made.");
+                    } else
+                    {
+                        LogAndBound($"⚠ Incorrect Configuration{Environment.NewLine}This bot has been configured with {CurrentBoundChannel.Id} as a bound channel, yet it has no VNC server configured, nor does it REQUIRE for its bound channel to be used. The channel will be unbound and the bot will continue.");
+                    }
+                    if (!String.IsNullOrWhiteSpace(Config.DefaultVNCServerHostname))
+                    {
+                        VncClientConnectOptions _connsettings = new VncClientConnectOptions { ShareDesktop = true };
+                        _connsettings.Password = Config.DefaultVNCServerPassword.ToCharArray();
+
+                        Log.Logger.Information($"Connecting to {Config.DefaultVNCServerHostname}:{Config.DefaultVNCServerPort}");
+                        Program.CurrentHostname = Config.DefaultVNCServerHostname;
+                        Program.CurrentPort = Config.DefaultVNCServerPort;
+
+                        Program.RfbClient.Connect(Config.DefaultVNCServerHostname, Config.DefaultVNCServerPort, _connsettings);
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
-                    Log.Error("Could not bind to Default Channel: " + ex.Message);
+                    Log.Error("Bound proceidure fail: " + ex.Message);
                 }
             }
-
-            if (!String.IsNullOrWhiteSpace(clientConfig.DefaultConnectToHost) && clientConfig.DefaultConnectToPort > 0)
-            {
-                SendToLogAndBoundChannel($"Attempting connection to server set in config: {clientConfig.DefaultConnectToHost}:{clientConfig.DefaultConnectToPort}");
-            }*/
 
             return Task.CompletedTask;
         }
@@ -206,86 +228,58 @@ namespace dkayVNC
         {
             if (MeantToDisconnect)
             {
-                LogAndBound("Connection Closed." + Environment.NewLine
-                +"Unbounding this channel");
-                CurrentBoundChannel = null;
+                if (!PermissionsChecker.BoundChannelOnly())
+                {
+                    LogAndBound("Connection Closed." + Environment.NewLine
+                                + $"Unbounding bound channel {CurrentBoundChannel.Name}");
+                    CurrentBoundChannel = null;
+                } else
+                {
+                    LogAndBound("Connection Closed.");
+                }
             }
             else
             {
-                LogAndBound("Connection unexpectedly closed.");
+                if (!PermissionsChecker.BoundChannelOnly())
+                {
+                    LogAndBound("Connection unexpectedly closed." + Environment.NewLine
+                                + $"Unbounding bound channel {CurrentBoundChannel.Name}");
+                    CurrentBoundChannel = null;
+                }
+                else
+                {
+                    LogAndBound("Connection unexpectedly closed.");
+                }
+                //LogAndBound("Connection unexpectedly closed.");
                 //RfbClient.Connect(CurrentHostname, CurrentPort);
             }
-            /*Thread.Sleep(100);
-            vncclient = new RemoteViewing.Vnc.VncClient();
-            Setup();*/
         }
 
         private static void Vnc_ConnectionFail(object sender, EventArgs e)
         {
-            LogAndBound($"Connection attempt failed.");
-            /*Thread.Sleep(1000);
-            vncclient = new RemoteViewing.Vnc.VncClient();
-            Setup();*/
+            if (!PermissionsChecker.BoundChannelOnly())
+            {
+                LogAndBound("Connection attempt failed." + Environment.NewLine
+                            + $"Unbounding bound channel {CurrentBoundChannel.Name}");
+                CurrentBoundChannel = null;
+            }
+            else
+            {
+                LogAndBound("Connection attempt failed.");
+            }
         }
 
         private static void Vnc_RemoteClipboardChange(object sender, RemoteClipboardChangedEventArgs e)
         {
-            LogAndBound("Remote Clipboard change: " + e.Contents);
-        }
-
-        public static Bitmap GetRfbBitmap()
-        {
-            if (RfbClient.IsConnected)
-            {
-                Bitmap _rfbframebuffer = new Bitmap(RfbClient.Framebuffer.Width, RfbClient.Framebuffer.Height, PixelFormat.Format32bppRgb);
-
-                var _fbrect = new Rectangle(0, 0, RfbClient.Framebuffer.Width, RfbClient.Framebuffer.Height);
-                var data = _rfbframebuffer.LockBits(_fbrect, ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
-                try
-                {
-                    VncPixelFormat.CopyFromFramebuffer(RfbClient.Framebuffer, new VncRectangle(0, 0, RfbClient.Framebuffer.Width, RfbClient.Framebuffer.Height), data.Scan0, data.Stride, 0, 0);
-                }
-                finally
-                {
-                    _rfbframebuffer.UnlockBits(data);
-                }
-
-                return _rfbframebuffer;
-            }
-
-            Bitmap _novideoframebuffer = new Bitmap(640, 480, PixelFormat.Format32bppArgb);
-            Graphics _canvas = Graphics.FromImage(_novideoframebuffer);
-
-            _canvas.DrawString(DateTime.UtcNow.ToString(), new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), new SolidBrush(Color.White), 0, 0);
-
-            _canvas.DrawString("Not connected", new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), new SolidBrush(Color.Black), 100, 100);
-            _canvas.DrawString("Not connected", new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), new SolidBrush(Color.White), 99, 99);
-
-            _canvas.DrawString(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(), new Font(FontFamily.GenericMonospace, 12, FontStyle.Regular), new SolidBrush(Color.Green), 200, 200);
-
-            return _novideoframebuffer;
-        }
-
-        public static MemoryStream GetRfbMemoryStream(int frames = 0)
-        {
+            Log.Information("Remote Clipboard change: " + e.Contents);
+            DiscordMessageBuilder _dmb = new DiscordMessageBuilder().WithContent("Remote Clipboard change");
             MemoryStream _ms = new MemoryStream();
-            if (frames < 1)
-            {
-                Bitmap _bitmap = Program.GetRfbBitmap();
-                _bitmap.Save(_ms, System.Drawing.Imaging.ImageFormat.Png);
-                _bitmap.Dispose();
-            }    
-            else
-            {
-                AnimatedGifCreator gif = new AnimatedGifCreator(_ms, 83);
-                for (int i = 0; i < frames; i++)
-                {
-                    gif.AddFrameAsync(Program.GetRfbBitmap(), -1, GifQuality.Bit8).GetAwaiter().GetResult();
-                }
-                gif.Dispose();
-            }
+            byte[] _clipboard = Encoding.UTF8.GetBytes(e.Contents);
+            _ms.Write(_clipboard, 0, _clipboard.Length);
             _ms.Position = 0;
-            return _ms;
+            _dmb.AddFile("clipboard.txt", _ms);
+            CurrentBoundChannel.SendMessageAsync(_dmb).GetAwaiter().GetResult();
+            _ms.Dispose();
         }
     }
 }

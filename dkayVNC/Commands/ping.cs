@@ -12,7 +12,7 @@ namespace dkayVNC.Commands
     public class PingCommand : BaseCommandModule
     {
         [Command("ping")]
-        [Aliases(new string[] { "p", "pong", "ms" })]
+        [Aliases(new string[] { "pong", "ms" })]
         [Description("Gets the ping between connected services.")]
         [Usage("ping")]
         [Cooldown(2, 5, CooldownBucketType.Channel)]
