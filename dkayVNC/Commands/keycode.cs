@@ -19,7 +19,7 @@ namespace dkayVNC.Commands
     {
         [Command("keycode")]
         [Aliases(new string[] { "key", "k" })]
-        [Description("Send various VNC keycodes. Only one keycode will be held while this plays out.")]
+        [Description("Send various VNC keycodes. Only one keycode will be held while this plays out unless they are inside (this) (ex: `dkay!keycode (ControlLeft AltLeft Delete)`).")]
         [Usage("keycode [name, separated by spaces]")]
         [Cooldown(2, 5, CooldownBucketType.Channel)]
         public async Task Cmd(CommandContext ctx, [RemainingText]string keys)
@@ -33,6 +33,8 @@ namespace dkayVNC.Commands
 
             int keyssent = 0;
             string[] keysyms = keys.Split(' ');
+            List<KeySym> heldKeys = new List<KeySym>();
+            bool holdKeys = false;
 
             // This command does not use the Program.cs Gif Encoder cause I wanted to add a frame every key
             MemoryStream _ms = new MemoryStream();
@@ -41,25 +43,47 @@ namespace dkayVNC.Commands
             foreach (string key in keysyms)
             {
                 KeySym keySym;
-                if (key.Length == 1 && Char.IsUpper(Convert.ToChar(key)))
+                string currentKey = key;
+
+                if (key.StartsWith('('))
                 {
-                    // I made this thinking it would fix no upper case keys... it didn't??
-                    keySym = (KeySym)((int)Convert.ToChar(key));
-                    
-                    Program.RfbClient.SendKeyEvent(keySym, true);
-                    Program.RfbClient.SendKeyEvent(keySym, false);
-                    keyssent++;
-                } else if (Enum.TryParse(key, true, out keySym))
+                    holdKeys = true;
+                    currentKey = key.Remove(0, 1);
+                }
+                if (key.EndsWith(')'))
+                {
+                    holdKeys = false;
+                    currentKey = key.Remove(key.Length - 1);
+                }
+
+                if (Enum.TryParse(currentKey, true, out keySym))
                 {
                     if (Enum.IsDefined(typeof(KeySym), keySym))
                     {
                         Program.RfbClient.SendKeyEvent(keySym, true);
-                        Program.RfbClient.SendKeyEvent(keySym, false);
+                        if (!holdKeys)
+                        {
+                            Program.RfbClient.SendKeyEvent(keySym, false);
+                            foreach (KeySym keySym2 in heldKeys) { Program.RfbClient.SendKeyEvent(keySym2, false); }
+                            heldKeys.RemoveRange(0, heldKeys.Count);
+                        }
+                        else
+                            heldKeys.Add(keySym);
+
                         keyssent++;
 
-                        gif.AddFrame(Framebuffer.GetRfbBitmap(), -1, GifQuality.Bit8);
+                        await gif.AddFrameAsync(Framebuffer.GetRfbBitmap(), -1, GifQuality.Bit8);
                     }
                 }
+            }
+            gif.AddFrame(Framebuffer.GetRfbBitmap(), -1, GifQuality.Bit8); //in case any activity happens between these frames
+            gif.AddFrame(Framebuffer.GetRfbBitmap(), 2000, GifQuality.Bit8);
+
+            // Stop holding all keys if ) was never specified
+            foreach (KeySym keySym in heldKeys)
+            {
+                Program.RfbClient.SendKeyEvent(keySym, false);
+                heldKeys.RemoveRange(0, heldKeys.Count);
             }
 
             gif.Dispose();
