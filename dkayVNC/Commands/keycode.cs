@@ -36,9 +36,9 @@ namespace dkayVNC.Commands
             List<KeySym> heldKeys = new List<KeySym>();
             bool holdKeys = false;
 
-            // This command does not use the Program.cs Gif Encoder cause I wanted to add a frame every key
-            MemoryStream _ms = new MemoryStream();
-            AnimatedGifCreator gif = new AnimatedGifCreator(_ms, 83);
+            //// This command does not use the Program.cs Gif Encoder cause I wanted to add a frame every key
+            //MemoryStream _ms = new MemoryStream();
+            //AnimatedGifCreator gif = new AnimatedGifCreator(_ms, 83);
 
             foreach (string key in keysyms)
             {
@@ -72,12 +72,12 @@ namespace dkayVNC.Commands
 
                         keyssent++;
 
-                        await gif.AddFrameAsync(Framebuffer.GetRfbBitmap(), -1, GifQuality.Bit8);
+                        //await gif.AddFrameAsync(Framebuffer.GetRfbBitmap(), -1, GifQuality.Bit8);
                     }
                 }
             }
-            gif.AddFrame(Framebuffer.GetRfbBitmap(), -1, GifQuality.Bit8); //in case any activity happens between these frames
-            gif.AddFrame(Framebuffer.GetRfbBitmap(), 2000, GifQuality.Bit8);
+            //gif.AddFrame(Framebuffer.GetRfbBitmap(), -1, GifQuality.Bit8); //in case any activity happens between these frames
+            //gif.AddFrame(Framebuffer.GetRfbBitmap(), 2000, GifQuality.Bit8);
 
             // Stop holding all keys if ) was never specified
             foreach (KeySym keySym in heldKeys)
@@ -86,13 +86,13 @@ namespace dkayVNC.Commands
                 heldKeys.RemoveRange(0, heldKeys.Count);
             }
 
-            gif.Dispose();
-            _ms.Position = 0;
+            //gif.Dispose();
+            //_ms.Position = 0;
 
             if (keyssent > 0)
             {
                 DiscordMessageBuilder discordMessageBuilder = new DiscordMessageBuilder().WithContent($"⌨! (keys sent: {keyssent})");
-                discordMessageBuilder.AddFile("ss.gif", _ms, false);
+                discordMessageBuilder.AddFile("ss.gif", Framebuffer.GetRfbMemoryStream(20), false);
                 await ctx.RespondAsync(discordMessageBuilder);
             } else
             {

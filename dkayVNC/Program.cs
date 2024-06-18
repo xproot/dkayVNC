@@ -42,6 +42,8 @@ namespace dkayVNC
         public static VncClient RfbClient = new VncClient();
         public static string CurrentHostname = "N/A";
         public static ushort CurrentPort = 0;
+        public static int CurrentX = 0;
+        public static int CurrentY = 0;
         public static bool MeantToDisconnect = false;
 
         static void Main(string[] args)
