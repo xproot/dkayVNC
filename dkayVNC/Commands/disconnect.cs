@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using dkayVNC.Commands.Attributes;
 using Serilog;
+using dkayVNC.Utils;
 
 namespace dkayVNC.Commands
 {
@@ -19,6 +20,12 @@ namespace dkayVNC.Commands
         [Cooldown(2, 5, CooldownBucketType.Channel)]
         public async Task Cmd(CommandContext ctx)
         {
+            if (!PermissionData.CheckIfAllowed(ctx.Member.Id, ctx.Channel.Id))
+            {
+                await ctx.RespondAsync("https://http.cat/403");
+                return;
+            }
+
             await ctx.TriggerTypingAsync();
 
             Program.MeantToDisconnect = true;

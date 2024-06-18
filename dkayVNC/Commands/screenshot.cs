@@ -23,6 +23,12 @@ namespace dkayVNC.Commands
         [Cooldown(2, 5, CooldownBucketType.Channel)]
         public async Task Cmd(CommandContext ctx, int frames = 0)
         {
+            if (!PermissionData.CheckIfAllowed(ctx.Member.Id, ctx.Channel.Id))
+            {
+                await ctx.RespondAsync("https://http.cat/403");
+                return;
+            }
+
             await ctx.TriggerTypingAsync();
             
             DiscordMessageBuilder discordMessageBuilder = new DiscordMessageBuilder().WithContent("📸!");

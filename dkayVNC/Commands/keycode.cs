@@ -25,6 +25,12 @@ namespace dkayVNC.Commands
         [Cooldown(2, 5, CooldownBucketType.Channel)]
         public async Task Cmd(CommandContext ctx, [RemainingText]string keys)
         {
+            if (!PermissionData.CheckIfAllowed(ctx.Member.Id, ctx.Channel.Id))
+            {
+                await ctx.RespondAsync("https://http.cat/403");
+                return;
+            }
+
             await ctx.TriggerTypingAsync();
 
             Program.LastControl = ctx.User.Username;

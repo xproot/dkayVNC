@@ -21,6 +21,12 @@ namespace dkayVNC.Commands
         [Cooldown(2, 5, CooldownBucketType.Channel)]
         public async Task Cmd(CommandContext ctx, string button = "none", int count = 1)
         {
+            if (!PermissionData.CheckIfAllowed(ctx.Member.Id, ctx.Channel.Id))
+            {
+                await ctx.RespondAsync("https://http.cat/403");
+                return;
+            }
+
             await ctx.TriggerTypingAsync();
 
             Definitions.MouseButtons mouseButton = Definitions.MouseButtons.None;

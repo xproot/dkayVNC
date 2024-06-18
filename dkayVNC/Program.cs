@@ -107,6 +107,7 @@ namespace dkayVNC
 
         static private Task Client_Ready(DiscordClient client, ReadyEventArgs e)
         {
+            PermissionData.Init();
             Log.Information($"Connected as: {client.CurrentUser.Username}#{client.CurrentUser.Discriminator} ({client.CurrentUser.Id})");
             Log.Information("Discord Client is ALMOST READY (Please wait for Guild Download)");
             return Task.CompletedTask;

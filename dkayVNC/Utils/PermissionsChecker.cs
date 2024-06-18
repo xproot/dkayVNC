@@ -17,5 +17,10 @@ namespace dkayVNC.Utils
             }
             return false;
         }
+
+        public static bool IsOwner(ulong id)
+        {
+            return Array.Exists(Program.Config.OwnerId, x => x == id);
+        }
     }
 }
