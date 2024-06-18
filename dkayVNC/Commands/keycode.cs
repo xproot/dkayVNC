@@ -12,6 +12,7 @@ using AnimatedGif;
 using System.Drawing;
 using RemoteViewing.Vnc;
 using dkayVNC.Utils;
+using System.Runtime.CompilerServices;
 
 namespace dkayVNC.Commands
 {
@@ -55,6 +56,10 @@ namespace dkayVNC.Commands
                     holdKeys = false;
                     currentKey = key.Remove(key.Length - 1);
                 }
+                if (currentKey.ToLower() == "delay")
+                {
+                    await Task.Delay(500);
+                }
 
                 if (Enum.TryParse(currentKey, true, out keySym))
                 {
@@ -70,6 +75,7 @@ namespace dkayVNC.Commands
                         else
                             heldKeys.Add(keySym);
 
+                        await Task.Delay(10);
                         keyssent++;
 
                         //await gif.AddFrameAsync(Framebuffer.GetRfbBitmap(), -1, GifQuality.Bit8);

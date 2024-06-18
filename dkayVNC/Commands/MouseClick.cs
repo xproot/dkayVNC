@@ -12,14 +12,14 @@ using DSharpPlus.Entities;
 
 namespace dkayVNC.Commands
 {
-    public class MousePointCommand : BaseCommandModule
+    public class MouseClickCommand : BaseCommandModule
     {
-        [Command("mousepoint")]
-        [Aliases(new string[] { "point", "p", "abs" })]
-        [Description("Fixes the cursor to an absolute point.")]
-        [Usage("mousepoint [±x] [±y] [drag button: Left/1, Middle/2, Right/4, ScrollDown/8, ScrollUp/16]")]
+        [Command("mouseclick")]
+        [Aliases(new string[] { "click", "c", "clk" })]
+        [Description("Clicks the cursor.")]
+        [Usage("mouseclick [button: Left/1, Middle/2, Right/4, ScrollDown/8, ScrollUp/16], [count = 1]")]
         [Cooldown(2, 5, CooldownBucketType.Channel)]
-        public async Task Cmd(CommandContext ctx, int x, int y, string button = "none")
+        public async Task Cmd(CommandContext ctx, string button = "none", int count = 1)
         {
             await ctx.TriggerTypingAsync();
 
@@ -31,21 +31,12 @@ namespace dkayVNC.Commands
             Program.LastControlTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             Program.LastControlType = "Mouse";
 
-            if (mouseButton != Definitions.MouseButtons.None)
+            for (int i = 0; i < count; i++)
             {
                 Program.RfbClient.SendPointerEvent(Program.CurrentX, Program.CurrentY, (int)mouseButton);
-                await Task.Delay(10);
-                Program.RfbClient.SendPointerEvent(x, y, (int)mouseButton);
-                await Task.Delay(10);
-                Program.RfbClient.SendPointerEvent(x, y, 0);
-                await Task.Delay(10);
             }
-            else
-                Program.RfbClient.SendPointerEvent(x, y, 0);
-            Program.CurrentX = x;
-            Program.CurrentY = y;
 
-            DiscordMessageBuilder discordMessageBuilder = new DiscordMessageBuilder().WithContent($"kinda todo, ({Program.CurrentX}, {Program.CurrentY}) -> {mouseButton.ToString()} -> ({x}, {y})");
+            DiscordMessageBuilder discordMessageBuilder = new DiscordMessageBuilder().WithContent($"kinda todo, ({Program.CurrentX}, {Program.CurrentY}) -> {mouseButton.ToString()}x{count}");
 
             discordMessageBuilder.AddFile("ss.gif", Framebuffer.GetRfbMemoryStream(20), false);
 

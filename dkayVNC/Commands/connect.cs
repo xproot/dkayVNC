@@ -14,7 +14,7 @@ namespace dkayVNC.Commands
     public class ConnectCommand : BaseCommandModule
     {
         [Command("connect")]
-        [Aliases(new string[] { "to", "conn", "server" })]
+        [Aliases(new string[] { "to", "conn", "server", "host" })]
         [Description("Connect the VNC Client.")]
         [Usage("connect [hostname] [port(Optional: 5900)] [password(Optional)]")]
         [Cooldown(2, 5, CooldownBucketType.Channel)]

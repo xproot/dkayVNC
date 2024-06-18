@@ -11,9 +11,11 @@ namespace dkayVNC.Utils
         public enum MouseButtons
         {
             None = 0,
-            Left = 1,
-            Middle = 2,
-            Right = 3
+            LeftDown = 1,
+            MiddleDown = 2,
+            RightDown = 4,
+            ScrollDown = 8,
+            ScrollUp = 16
         }
     }
 }
