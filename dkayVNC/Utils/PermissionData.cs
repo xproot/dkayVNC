@@ -48,14 +48,14 @@ namespace dkayVNC.Utils
         {
             if (PermissionsChecker.IsOwner(id))
                 return true;
+            if (Program.Config.EnforceDefaultChannel == true && cid != Program.CurrentBoundChannel.Id)
+                return false;
             if (!list.Enabled)
                 return true;
             if (list.IDs.Contains(id) && list.Enabled && !list.Blacklist)
                 return true;
             if (!list.IDs.Contains(id) && list.Enabled && list.Blacklist)
                 return true;
-            if (!PermissionsChecker.IsOwner(id) && Program.Config.EnforceDefaultChannel == true && cid != Program.CurrentBoundChannel.Id)
-                return false;
             return false;
         }
 
