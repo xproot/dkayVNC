@@ -26,10 +26,8 @@ jobs:
       run: dotnet build --no-restore --configuration Release
     - name: Test
       run: dotnet test --no-build --verbosity normal
-    - name: 'Archive artifact'
-      run: zip -r release.zip .
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: release.zip
-        path: release.zip
+        name: release
+        path: bin/Release/net6.0
