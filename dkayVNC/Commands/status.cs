@@ -12,7 +12,7 @@ namespace dkayVNC.Commands
     public class StatusCommand : BaseCommandModule
     {
         [Command("status")]
-        [Aliases(new string[] { "stat", "s"})]
+        [Aliases(new string[] { "stat"})]
         [Description("Shows the status of the vnc client.")]
         [Usage("status")]
         [Cooldown(2, 5, CooldownBucketType.Channel)]
