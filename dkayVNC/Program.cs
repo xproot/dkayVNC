@@ -132,11 +132,13 @@ namespace dkayVNC
                     {
                         LogAndBound($"ℹ #{CurrentBoundChannel.Name} is required{Environment.NewLine}dkayVNC has been configured to only accept VNC commands on {CurrentBoundChannel.Name}.");
                             
-                    } else if (!String.IsNullOrWhiteSpace(Config.DefaultVNCServerHostname))
+                    }
+                    if (!String.IsNullOrWhiteSpace(Config.DefaultVNCServerHostname))
                     {
                         LogAndBound($"Due to the bot's configuration, {CurrentBoundChannel.Name} has been bound and a connection attempt to {Config.DefaultVNCServerHostname}:{Config.DefaultVNCServerPort} is being made.");
                     } else
                     {
+                        // this should never happen dumbass
                         LogAndBound($"⚠ Incorrect Configuration{Environment.NewLine}This bot has been configured with {CurrentBoundChannel.Id} as a bound channel, yet it has no VNC server configured, nor does it REQUIRE for its bound channel to be used. The channel will be unbound and the bot will continue.");
                     }
                     if (!String.IsNullOrWhiteSpace(Config.DefaultVNCServerHostname))
