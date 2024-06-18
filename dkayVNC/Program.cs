@@ -136,13 +136,6 @@ namespace dkayVNC
                     if (!String.IsNullOrWhiteSpace(Config.DefaultVNCServerHostname))
                     {
                         LogAndBound($"Due to the bot's configuration, {CurrentBoundChannel.Name} has been bound and a connection attempt to {Config.DefaultVNCServerHostname}:{Config.DefaultVNCServerPort} is being made.");
-                    } else
-                    {
-                        // this should never happen dumbass
-                        LogAndBound($"⚠ Incorrect Configuration{Environment.NewLine}This bot has been configured with {CurrentBoundChannel.Id} as a bound channel, yet it has no VNC server configured, nor does it REQUIRE for its bound channel to be used. The channel will be unbound and the bot will continue.");
-                    }
-                    if (!String.IsNullOrWhiteSpace(Config.DefaultVNCServerHostname))
-                    {
                         VncClientConnectOptions _connsettings = new VncClientConnectOptions { ShareDesktop = true };
                         _connsettings.Password = Config.DefaultVNCServerPassword.ToCharArray();
 
@@ -150,7 +143,18 @@ namespace dkayVNC
                         Program.CurrentHostname = Config.DefaultVNCServerHostname;
                         Program.CurrentPort = Config.DefaultVNCServerPort;
 
-                        Program.RfbClient.Connect(Config.DefaultVNCServerHostname, Config.DefaultVNCServerPort, _connsettings);
+                        try
+                        {
+                            Program.RfbClient.Connect(Config.DefaultVNCServerHostname, Config.DefaultVNCServerPort, _connsettings);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogAndBound($"🌋 Connection failed: {ex.Message}");
+                        }
+                    } else
+                    {
+                        // this should never happen dumbass
+                        LogAndBound($"⚠ Incorrect Configuration{Environment.NewLine}This bot has been configured with {CurrentBoundChannel.Id} as a bound channel, yet it has no VNC server configured, nor does it REQUIRE for its bound channel to be used. The channel will be unbound and the bot will continue.");
                     }
                 }
                 catch (Exception ex)
